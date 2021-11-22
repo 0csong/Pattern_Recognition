@@ -22,7 +22,7 @@ def mean_shift(X, bandwidth, n_iteration=20, epsilon=0.001):
 
     for i in range(len(X)):        
         centroid = X[i].copy()  # 초기 중심점(t_0) 설정 -> 각 datapoint를 초기 중심점으로 할당
-        prev = centroid.copy()
+        prev = centroid.copy() #수렴을 위해
         
         t = 0
         numerator = 0
@@ -30,24 +30,27 @@ def mean_shift(X, bandwidth, n_iteration=20, epsilon=0.001):
         while True:
             """
             코드 완성할 부분
-            """  
-            for k, centroid in enumerate(centroid):
-                _bandwidth = []
-                for point in X:
-                    if calc_euclidean_distance(point, centroid) <= bandwidth:
-                        _bandwidth.append(point)
-
-            for Point in _bandwidth:
-                distance = calc_euclidean_distance(Point, centroid)
-                weight = calc_weight(distance, bandwidth)
-                numerator += (Point * weight)
+            """
+            # 종료조건 1- 반복횟수가 n_iteration을 초과하면 stop!
+            if t > n_iteration:
+                break
+            # 현재 중심점으로부터 bandwidth 내에 있는 샘플들을 기반으로 새로운 군집 중심점 계산
+            numerator = 0
+            denominator = 0
+            for sample in X:
+                distance = calc_euclidean_distance(centroid, sample)
+                weight = calc_weight(distance, bandwidth, 'flat')
+                numerator += ((sample - centroid) * weight)
                 denominator += weight
 
-            centroid[k] = numerator / (denominator + 1e-7)
+            if denominator == 0:
+                shift = 0
+            else:
+                shift = numerator / denominator
+            centroid += shift
 
-            if (all(calc_euclidean_distance(centroid, prev) < epsilon for centroid, prev in zip(centroid, prev))) or (t>20):
+            if calc_euclidean_distance(centroid, prev) < epsilon:
                 break
-          
           
             prev = centroid.copy()
             t += 1
@@ -74,26 +77,27 @@ def mean_shift_with_history(X, bandwidth, n_iteration=20, epsilon=0.001):
         while True:
             """
             코드 완성할 부분
-            """ 
-            for k, centroid in enumerate(centroid):
-                _bandwidth = []
-                for point in X:
-                    if calc_euclidean_distance(point, centroid) <= bandwidth:
-                        _bandwidth.append(point)
-
-            for Point in _bandwidth:
-                distance = calc_euclidean_distance(Point, centroid)
-                weight = calc_weight(distance, bandwidth)
-                numerator += (Point * weight)
+            """
+            # 종료조건 1- 반복횟수가 n_iteration을 초과하면 stop!
+            if t > n_iteration:
+                break
+            # 현재 중심점으로부터 bandwidth 내에 있는 샘플들을 기반으로 새로운 군집 중심점 계산
+            numerator = 0
+            denominator = 0
+            for sample in X:
+                distance = calc_euclidean_distance(centroid, sample)
+                weight = calc_weight(distance, bandwidth, 'flat')
+                numerator += ((sample - centroid) * weight)
                 denominator += weight
 
-            centroid[k] = numerator / (denominator + 1e-7)
+            if denominator == 0:
+                shift = 0
+            else:
+                shift = numerator / denominator
+            centroid += shift
 
-            if (all(calc_euclidean_distance(centroid, prev) < epsilon for centroid, prev in zip(centroid, prev)))or (t>20):
+            if calc_euclidean_distance(centroid, prev) < epsilon:
                 break
-           
-  
-          
 
             prev = centroid.copy()
             t += 1
